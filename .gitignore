@@ -1,0 +1,6 @@
+# Runtime logs
+logs/*.log
+
+# Editor
+*.swp
+*~
