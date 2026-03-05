@@ -19,7 +19,7 @@ cleanup_old_logs() {
 }
 
 detect_wifi_device() {
-    WIFI_DEVICE="$(nmcli -t -f DEVICE,TYPE device status | grep ':wifi$' | head -1 | cut -d: -f1)"
+    WIFI_DEVICE="$(nmcli -t -f DEVICE,TYPE device status | grep ':wifi$' | head -1 | cut -d: -f1 || true)"
     if [[ -z "$WIFI_DEVICE" ]]; then
         log "ERROR: No WiFi device found"
         return 1
@@ -28,7 +28,7 @@ detect_wifi_device() {
 }
 
 get_current_ssid() {
-    nmcli -t -f active,ssid dev wifi list ifname "$WIFI_DEVICE" 2>/dev/null | grep '^yes:' | cut -d: -f2
+    nmcli -t -f active,ssid dev wifi list ifname "$WIFI_DEVICE" 2>/dev/null | grep '^yes:' | cut -d: -f2 || true
 }
 
 is_connected_to_target() {
@@ -42,7 +42,7 @@ is_wifi_radio_on() {
 }
 
 get_device_state() {
-    nmcli -t -f DEVICE,STATE device status | grep "^${WIFI_DEVICE}:" | cut -d: -f2
+    nmcli -t -f DEVICE,STATE device status | grep "^${WIFI_DEVICE}:" | cut -d: -f2 || true
 }
 
 enable_wifi_radio() {
