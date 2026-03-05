@@ -5,7 +5,8 @@ Wants=NetworkManager.service
 
 [Service]
 Type=simple
-ExecStart=/usr/local/bin/wifi-reconnect.sh
+EnvironmentFile=/etc/default/wifi-reconnect
+ExecStart=/usr/local/bin/wifi-reconnect.sh $TARGET_SSID
 Restart=always
 RestartSec=5
 StandardOutput=journal

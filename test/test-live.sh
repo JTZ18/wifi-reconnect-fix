@@ -21,7 +21,7 @@ if ! systemctl is-active wifi-reconnect.service &>/dev/null; then
 fi
 
 WIFI_DEVICE="$(nmcli -t -f DEVICE,TYPE device status | grep ':wifi$' | head -1 | cut -d: -f1)"
-TARGET_SSID="$(nmcli -t -f active,ssid dev wifi | grep '^yes:' | cut -d: -f2)"
+TARGET_SSID="$(nmcli -t -f active,ssid dev wifi | grep '^yes:' | cut -d: -f2-)"
 
 if [[ -z "$WIFI_DEVICE" || -z "$TARGET_SSID" ]]; then
     echo -e "${RED}Error: Cannot detect WiFi device or current SSID.${NC}"
@@ -44,7 +44,7 @@ wait_for_reconnect() {
             return 1
         fi
         local current
-        current="$(nmcli -t -f active,ssid dev wifi list ifname "$WIFI_DEVICE" 2>/dev/null | grep '^yes:' | cut -d: -f2 || true)"
+        current="$(nmcli -t -f active,ssid dev wifi 2>/dev/null | grep '^yes:' | cut -d: -f2- || true)"
         if [[ "$current" == "$TARGET_SSID" ]]; then
             echo "$elapsed"
             return 0
@@ -61,10 +61,10 @@ echo "Waiting for auto-reconnect (timeout: ${TIMEOUT}s)..."
 
 if recovery_time="$(wait_for_reconnect)"; then
     echo -e "${GREEN}PASS${NC}: Reconnected after device disconnect (${recovery_time}s)"
-    ((++PASS))
+    PASS=$((PASS + 1))
 else
     echo -e "${RED}FAIL${NC}: Did not reconnect within ${TIMEOUT}s"
-    ((++FAIL))
+    FAIL=$((FAIL + 1))
     # Manually recover so next test can run
     nmcli connection up "$TARGET_SSID" 2>/dev/null || true
     sleep 5
@@ -81,10 +81,10 @@ echo "Waiting for auto-reconnect (timeout: ${TIMEOUT}s)..."
 
 if recovery_time="$(wait_for_reconnect)"; then
     echo -e "${GREEN}PASS${NC}: Reconnected after radio off (${recovery_time}s)"
-    ((++PASS))
+    PASS=$((PASS + 1))
 else
     echo -e "${RED}FAIL${NC}: Did not reconnect within ${TIMEOUT}s"
-    ((++FAIL))
+    FAIL=$((FAIL + 1))
     # Manually recover
     nmcli radio wifi on
     sleep 5

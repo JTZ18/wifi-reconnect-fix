@@ -8,10 +8,10 @@ LOG_DIR="/var/log/wifi-reconnect"
 WIFI_DEVICE=""
 
 log() {
-    local timestamp
-    timestamp="$(date '+%Y-%m-%d %H:%M:%S')"
-    local log_file="${LOG_DIR}/wifi-reconnect-$(date '+%Y-%m-%d').log"
-    echo "[${timestamp}] $1" | tee -a "$log_file"
+    local now
+    now="$(date '+%Y-%m-%d %H:%M:%S')"
+    local log_file="${LOG_DIR}/wifi-reconnect-${now%% *}.log"
+    echo "[${now}] $1" | tee -a "$log_file"
 }
 
 cleanup_old_logs() {
@@ -28,7 +28,7 @@ detect_wifi_device() {
 }
 
 get_current_ssid() {
-    nmcli -t -f active,ssid dev wifi list ifname "$WIFI_DEVICE" 2>/dev/null | grep '^yes:' | cut -d: -f2 || true
+    nmcli -t -f active,ssid dev wifi 2>/dev/null | grep '^yes:' | cut -d: -f2- || true
 }
 
 is_connected_to_target() {
@@ -42,7 +42,7 @@ is_wifi_radio_on() {
 }
 
 get_device_state() {
-    nmcli -t -f DEVICE,STATE device status | grep "^${WIFI_DEVICE}:" | cut -d: -f2 || true
+    nmcli -t -f DEVICE,STATE device status | grep "^${WIFI_DEVICE}:" | cut -d: -f2- || true
 }
 
 enable_wifi_radio() {
@@ -104,6 +104,8 @@ attempt_reconnect() {
 }
 
 main() {
+    trap 'log "Watchdog stopped (received signal)"; exit 0' SIGTERM SIGINT
+
     mkdir -p "$LOG_DIR"
     cleanup_old_logs
 

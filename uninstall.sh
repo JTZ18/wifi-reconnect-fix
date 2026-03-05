@@ -20,6 +20,7 @@ systemctl disable "${SERVICE_NAME}.service" 2>/dev/null || true
 # Remove files
 rm -f "$INSTALL_PATH"
 rm -f "$SERVICE_PATH"
+rm -f /etc/default/wifi-reconnect
 systemctl daemon-reload
 
 # Ask about logs

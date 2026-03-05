@@ -15,7 +15,7 @@ fi
 # Detect or accept SSID
 TARGET_SSID="${1:-}"
 if [[ -z "$TARGET_SSID" ]]; then
-    TARGET_SSID="$(nmcli -t -f active,ssid dev wifi | grep '^yes:' | cut -d: -f2)"
+    TARGET_SSID="$(nmcli -t -f active,ssid dev wifi | grep '^yes:' | cut -d: -f2-)"
     if [[ -z "$TARGET_SSID" ]]; then
         echo "Error: Not connected to WiFi. Please provide SSID as argument: sudo ./install.sh <SSID>"
         exit 1
@@ -29,9 +29,11 @@ echo "Installing WiFi reconnect watchdog for SSID: ${TARGET_SSID}"
 cp "${SCRIPT_DIR}/wifi-reconnect.sh" "$INSTALL_PATH"
 chmod +x "$INSTALL_PATH"
 
-# Write service file with SSID argument
-sed "s|ExecStart=/usr/local/bin/wifi-reconnect.sh|ExecStart=/usr/local/bin/wifi-reconnect.sh ${TARGET_SSID}|" \
-    "${SCRIPT_DIR}/wifi-reconnect.service" > "$SERVICE_PATH"
+# Write environment file with SSID
+echo "TARGET_SSID=${TARGET_SSID}" > /etc/default/wifi-reconnect
+
+# Copy service file as-is
+cp "${SCRIPT_DIR}/wifi-reconnect.service" "$SERVICE_PATH"
 
 # Enable and start
 systemctl daemon-reload

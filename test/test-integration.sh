@@ -15,12 +15,12 @@ assert_equals() {
     local test_name="$1" expected="$2" actual="$3"
     if [[ "$expected" == "$actual" ]]; then
         echo -e "${GREEN}PASS${NC}: ${test_name}"
-        ((++PASS))
+        PASS=$((PASS + 1))
     else
         echo -e "${RED}FAIL${NC}: ${test_name}"
         echo "  Expected: '${expected}'"
         echo "  Actual:   '${actual}'"
-        ((++FAIL))
+        FAIL=$((FAIL + 1))
     fi
 }
 
